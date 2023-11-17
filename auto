@@ -1,0 +1,111 @@
+%sensor implementation
+aDist = brick.UltrasonicDist(1);
+
+% color sensor implementation
+brick.SetColorMode(2, 2);
+color = brick.ColorCode(2);
+brick.GyroCalibrate(4);
+touchR = brick.TouchPressed(3);
+angle1 = 0;
+
+% make car go faster so it clears the gap and doesn't need a pause
+% statement so it correctly reads the stop sign.
+
+% begins movement
+brick.MoveMotor('D', -50);
+brick.MoveMotor('A', -54);
+
+while 1
+    color = brick.ColorCode(2);
+    aDist = brick.UltrasonicDist(1);
+    touchR = brick.TouchPressed(3);
+    if (aDist >= 65) % only left turns
+        pause(1.5);
+        brick.StopAllMotors('Brake');
+        pause(1);
+        doneTurning = false;
+        angle1 = angle1 - 90;
+        brick.MoveMotor('D', 25);
+        brick.MoveMotor('A', -25);
+        while doneTurning == false
+            angle = brick.GyroAngle(4);
+            if angle <= angle1
+                brick.StopAllMotors('Brake');
+                doneTurning = true;
+            end
+        end
+        pause(0.5);
+        while aDist > 40
+            aDist = brick.UltrasonicDist(1);
+            brick.MoveMotor('D', -50);
+            brick.MoveMotor('A', -54);
+        end
+        brick.StopAllMotors('Brake');
+        color = brick.ColorCode(2);
+        if (color == 5)
+            pause(3);
+            brick.MoveMotor('D', -50);
+            brick.MoveMotor('A', -54);
+
+        else
+            brick.MoveMotor('D', -50);
+            brick.MoveMotor('A', -54);
+        end
+
+    elseif (touchR == 1 && aDist < 40) % only right turns
+        brick.StopAllMotors('Brake');
+        pause(0.5);
+        brick.MoveMotorAngleRel('AD', 50, 150, 'Coast');
+        %brick.WaitForMotor('AD');
+        pause(1);
+        doneTurning1 = false;
+        angle1 = angle1 + 90;
+        brick.MoveMotor('D', -25);
+        brick.MoveMotor('A', 25);
+        while doneTurning1 == false
+            angle = brick.GyroAngle(4);
+            if angle >= angle1
+                brick.StopAllMotors('Brake');
+                doneTurning1 = true;
+            end
+        end
+        pause(0.5);
+        brick.MoveMotor('D', -50);
+        brick.MoveMotor('A', -54);
+
+
+    elseif (touchR == 1 && aDist > 40) % only left turns
+        brick.StopAllMotors('Brake');
+        pause(0.5);
+        brick.MoveMotorAngleRel('AD', 50, 150, 'Coast');
+        %brick.WaitForMotor('AD');
+        pause(1);
+        doneTurning2 = false;
+        angle1 = angle1 - 90;
+        brick.MoveMotor('D', 25);
+        brick.MoveMotor('A', -25);
+        while doneTurning2 == false
+            angle = brick.GyroAngle(4);
+            if angle <= angle1
+                brick.StopAllMotors('Brake');
+                doneTurning2 = true;
+            end
+        end
+        pause(0.5);
+
+        brick.MoveMotor('D', -50);
+        brick.MoveMotor('A', -54);
+    end
+
+    if (color == 5)
+        pause(0.5);
+        brick.StopAllMotors('Brake');
+        pause(3);
+        brick.MoveMotor('D', -50);
+        brick.MoveMotor('A', -54);
+    end
+
+    if (color == 4)
+        brick.StopAllMotors('Brake');
+    end
+end
